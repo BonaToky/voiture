@@ -104,7 +104,7 @@ public class ChronoVue extends JPanel {
     }
 
     public void showFinishTime() {
-        showFinishTimeSeconds(elapsedSeconds);
+        showFinishTimeSeconds(chronoSeconds);
     }
 
     public void showFinishTimeSeconds(int seconds) {
@@ -112,7 +112,6 @@ public class ChronoVue extends JPanel {
             return;
         }
         int safeSeconds = Math.max(0, seconds);
-        stopChrono();
         finishLabel.setText("Arrivee: " + safeSeconds + " s");
         finishLabel.setForeground(new Color(255, 215, 0));
         finishShown = true;

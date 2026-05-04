@@ -73,7 +73,7 @@ public class TableauBordControleur {
                     updateStatus("ARRIVEE ! La voiture a termine la piste !");
                     Toolkit.getDefaultToolkit().beep();
                     if (chronoVue != null) {
-                        chronoVue.showFinishTimeSeconds(model.getTempsCourseSecondes());
+                        chronoVue.showFinishTime();
                     }
                 } else if (distance == 0) {
                     if (chronoVue != null) {
