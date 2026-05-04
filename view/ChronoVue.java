@@ -14,6 +14,7 @@ public class ChronoVue extends JPanel {
     private final JLabel finishLabel;
     private final JButton startButton;
     private final JButton stopButton;
+    private final JButton resetButton;
     private final Timer timer;
     private boolean finishShown = false;
 
@@ -38,6 +39,7 @@ public class ChronoVue extends JPanel {
 
         startButton = createButton("Start", new Color(0, 140, 0));
         stopButton = createButton("Stop", new Color(140, 0, 0));
+        resetButton = createButton("Reinitialiser", new Color(0, 0, 140));
 
         finishLabel = new JLabel("Arrivee: --");
         finishLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -46,6 +48,7 @@ public class ChronoVue extends JPanel {
 
         startButton.addActionListener(e -> startChrono());
         stopButton.addActionListener(e -> stopChrono());
+        resetButton.addActionListener(e -> resetChrono());
 
         timer = new Timer(TICK_MS, e -> tick());
 
@@ -56,6 +59,8 @@ public class ChronoVue extends JPanel {
         add(startButton);
         add(Box.createVerticalStrut(8));
         add(stopButton);
+        add(Box.createVerticalStrut(8));
+        add(resetButton);
         add(Box.createVerticalStrut(12));
         add(finishLabel);
         add(Box.createVerticalGlue());
@@ -85,6 +90,17 @@ public class ChronoVue extends JPanel {
             timer.stop();
             updateButtons();
         }
+    }
+
+    private void resetChrono() {
+        if (timer.isRunning()) {
+            timer.stop();
+        }
+        chronoSeconds = START_SECONDS;
+        elapsedSeconds = 0;
+        timeLabel.setText(formatTime(chronoSeconds));
+        clearFinish();
+        updateButtons();
     }
 
     public void showFinishTime() {
