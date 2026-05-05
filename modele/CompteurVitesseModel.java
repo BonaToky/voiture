@@ -8,6 +8,7 @@ import javax.swing.event.EventListenerList;
 public class CompteurVitesseModel {
     private static final double DISTANCE_SCALE = 1.0;
     private double vitesseActuelle = 0; // km/h
+    private double vitessePalier = 0; // km/h
     private Voiture voitureActuelle = null;
     private Piste pisteActuelle = null;
     private EventListenerList listeners = new EventListenerList();
@@ -26,10 +27,36 @@ public class CompteurVitesseModel {
     public Voiture getVoitureActuelle() { return voitureActuelle; }
     public Piste getPisteActuelle() { return pisteActuelle; }
     public int getTempsCourseSecondes() { return (int) Math.round(tempsCourse); }
+
+    public double getTempsTheoriqueSecondes() {
+        if (voitureActuelle == null || pisteActuelle == null) {
+            return 0;
+        }
+        double acceleration = voitureActuelle.getAcceleration();
+        double vitesseMax = voitureActuelle.getVitesseMax();
+        double distanceKm = pisteActuelle.getDistanceKm();
+        double vitessePalierEffective = vitessePalier > 0 ? Math.min(vitessePalier, vitesseMax) : vitesseMax;
+
+        if (acceleration <= 0 || vitesseMax <= 0 || distanceKm <= 0 || vitessePalierEffective <= 0) {
+            return 0;
+        }
+
+        double t1 = vitessePalierEffective / acceleration;
+        double d1 = 0.5 * acceleration * t1 * t1 / 3600.0;
+
+        if (distanceKm <= d1) {
+            return Math.sqrt(2 * distanceKm * 3600.0 / acceleration);
+        }
+
+        double d2 = distanceKm - d1;
+        double t2 = (d2 / vitessePalierEffective) * 3600.0;
+        return t1 + t2;
+    }
     
     public void setVoiture(Voiture voiture) {
         this.voitureActuelle = voiture;
         this.vitesseActuelle = 0;
+        this.vitessePalier = 0;
         this.accelerating = false;
         this.tempsCourse = 0;
         this.courseEnCours = false;
@@ -44,6 +71,7 @@ public class CompteurVitesseModel {
         this.pisteActuelle = piste;
         this.tempsCourse = 0;
         this.courseEnCours = false;
+        this.vitessePalier = 0;
         if (pisteActuelle != null) {
             pisteActuelle.reset();
         }
@@ -62,6 +90,7 @@ public class CompteurVitesseModel {
         if (voitureActuelle != null && pisteActuelle != null && !pisteActuelle.estTerminee()) {
             if (!accelerating) {
                 accelerating = true;
+                vitessePalier = 0;
                 dernierTemps = System.currentTimeMillis();
             }
         }
@@ -69,6 +98,9 @@ public class CompteurVitesseModel {
     
     public void stopAcceleration() {
         accelerating = false;
+        if (voitureActuelle != null && vitesseActuelle > 0) {
+            vitessePalier = Math.min(vitesseActuelle, voitureActuelle.getVitesseMax());
+        }
     }
     
     private void startAnimationTimer() {
@@ -115,6 +147,7 @@ public class CompteurVitesseModel {
         accelerating = false;
         tempsCourse = 0;
         courseEnCours = false;
+        vitessePalier = 0;
         stopAcceleration();
         if (pisteActuelle != null) {
             pisteActuelle.reset();
@@ -125,6 +158,7 @@ public class CompteurVitesseModel {
     public void stopCourse() {
         stopAcceleration();
         vitesseActuelle = 0;
+        vitessePalier = 0;
         courseEnCours = false;
         fireStateChanged();
     }

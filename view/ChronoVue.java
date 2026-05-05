@@ -3,13 +3,14 @@ package view;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.Locale;
 
 public class ChronoVue extends JPanel {
-    private static final int START_SECONDS = -5;
-    private static final int TICK_MS = 1000;
+    private static final long START_MILLIS = -5000L;
+    private static final int TICK_MS = 20;
 
-    private int chronoSeconds = START_SECONDS;
-    private int elapsedSeconds = 0;
+    private long chronoMillis = START_MILLIS;
+    private long startNano = 0L;
     private final JLabel timeLabel;
     private final JLabel finishLabel;
     private final JButton startButton;
@@ -32,10 +33,10 @@ public class ChronoVue extends JPanel {
         title.setForeground(Color.WHITE);
         title.setFont(new Font("Arial", Font.BOLD, 16));
 
-        timeLabel = new JLabel(formatTime(chronoSeconds));
+        timeLabel = new JLabel(formatTimeMillis(chronoMillis));
         timeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         timeLabel.setForeground(new Color(0, 255, 200));
-        timeLabel.setFont(new Font("Monospaced", Font.BOLD, 28));
+        timeLabel.setFont(new Font("Monospaced", Font.BOLD, 20));
 
         startButton = createButton("Start", new Color(0, 140, 0));
         stopButton = createButton("Stop", new Color(140, 0, 0));
@@ -69,17 +70,15 @@ public class ChronoVue extends JPanel {
     }
 
     private void tick() {
-        chronoSeconds++;
-        elapsedSeconds++;
-        timeLabel.setText(formatTime(chronoSeconds));
+        updateChronoNow();
     }
 
     public void startChrono() {
         if (!timer.isRunning()) {
-            chronoSeconds = START_SECONDS;
-            elapsedSeconds = 0;
-            timeLabel.setText(formatTime(chronoSeconds));
+            chronoMillis = START_MILLIS;
+            timeLabel.setText(formatTimeMillis(chronoMillis));
             clearFinish();
+            startNano = System.nanoTime();
             timer.start();
             updateButtons();
         }
@@ -96,23 +95,37 @@ public class ChronoVue extends JPanel {
         if (timer.isRunning()) {
             timer.stop();
         }
-        chronoSeconds = START_SECONDS;
-        elapsedSeconds = 0;
-        timeLabel.setText(formatTime(chronoSeconds));
+        chronoMillis = START_MILLIS;
+        timeLabel.setText(formatTimeMillis(chronoMillis));
         clearFinish();
         updateButtons();
     }
 
     public void showFinishTime() {
-        showFinishTimeSeconds(chronoSeconds);
+        updateChronoNow();
+        showFinishTimeMillis(chronoMillis);
     }
 
     public void showFinishTimeSeconds(int seconds) {
+        showFinishTimeSeconds((double) seconds);
+    }
+
+    public void showFinishTimeSeconds(double seconds) {
         if (finishShown) {
             return;
         }
-        int safeSeconds = Math.max(0, seconds);
-        finishLabel.setText("Arrivee: " + safeSeconds + " s");
+        double safeSeconds = Math.max(0.0, seconds);
+        finishLabel.setText("Arrivee: " + formatSeconds(safeSeconds) + " s");
+        finishLabel.setForeground(new Color(255, 215, 0));
+        finishShown = true;
+    }
+
+    public void showFinishTimeMillis(long millis) {
+        if (finishShown) {
+            return;
+        }
+        long safeMillis = Math.max(0L, millis);
+        finishLabel.setText("Arrivee: " + formatTimeMillis(safeMillis));
         finishLabel.setForeground(new Color(255, 215, 0));
         finishShown = true;
     }
@@ -154,11 +167,25 @@ public class ChronoVue extends JPanel {
         return button;
     }
 
-    private String formatTime(int seconds) {
-        int abs = Math.abs(seconds);
-        int minutes = abs / 60;
-        int secs = abs % 60;
-        String sign = seconds < 0 ? "-" : "";
-        return String.format("%s%02d:%02d", sign, minutes, secs);
+    private void updateChronoNow() {
+        if (!timer.isRunning()) {
+            return;
+        }
+        long elapsedMillis = (System.nanoTime() - startNano) / 1_000_000L;
+        chronoMillis = START_MILLIS + elapsedMillis;
+        timeLabel.setText(formatTimeMillis(chronoMillis));
+    }
+
+    private String formatTimeMillis(long millis) {
+        long abs = Math.abs(millis);
+        long minutes = abs / 60000;
+        long seconds = (abs / 1000) % 60;
+        long ms = abs % 1000;
+        String sign = millis < 0 ? "-" : "";
+        return String.format("%s%02d:%02d:%03d", sign, minutes, seconds, ms);
+    }
+
+    private String formatSeconds(double seconds) {
+        return String.format(Locale.FRANCE, "%.2f", seconds);
     }
 }
