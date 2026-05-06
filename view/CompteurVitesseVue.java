@@ -66,14 +66,14 @@ public class CompteurVitesseVue extends JPanel {
         g2.setColor(Color.GRAY);
         g2.drawOval(x, y, size, size);
         
-        if (model.getVoitureActuelle() != null) {
-            int vitesseMax = model.getVoitureActuelle().getVitesseMax();
-            int dangerStart = (int)(vitesseMax * 0.8);
-            g2.setColor(new Color(255, 0, 0, 50));
-            double startAngle = 135 + (dangerStart * 270.0 / vitesseMax);
-            double endAngle = 135 + (vitesseMax * 270.0 / vitesseMax);
-            g2.fillArc(x, y, size, size, (int)startAngle, (int)(endAngle - startAngle));
-        }
+        // if (model.getVoitureActuelle() != null) {
+        //     int vitesseMax = model.getVoitureActuelle().getVitesseMax();
+        //     int dangerStart = (int)(vitesseMax * 0.8);
+        //     g2.setColor(new Color(255, 0, 0, 50));
+        //     double startAngle = 135 + (dangerStart * 270.0 / vitesseMax);
+        //     double endAngle = 135 + (vitesseMax * 270.0 / vitesseMax);
+        //     g2.fillArc(x, y, size, size, (int)startAngle, (int)(endAngle - startAngle));
+        // }
     }
     
     private void drawGraduations(Graphics2D g2, int width, int height, int size) {
@@ -158,7 +158,7 @@ public class CompteurVitesseVue extends JPanel {
         Voiture voiture = model.getVoitureActuelle();
         
         g2.setColor(new Color(0, 0, 0, 100));
-        g2.fillRoundRect(10, 10, 260, 120, 10, 10);
+        g2.fillRoundRect(10, 10, 260, 135, 10, 10);
         
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 14));
@@ -168,10 +168,13 @@ public class CompteurVitesseVue extends JPanel {
         g2.drawString("Vitesse Max: " + voiture.getVitesseMax() + " km/h", 20, 55);
         g2.drawString("Accélération: " + String.format("%.1f", voiture.getAcceleration()) + " km/h/s", 20, 75);
 
+        String consoText = String.format("Conso Nitro: %.1f kg/min", voiture.getConsoNitroKgMin());
+        g2.drawString(consoText, 20, 95);
+
         String nitroState = model.isNitroActive() ? "ON" : "OFF";
         String nitroText = String.format("Nitro: %.1f/%.1f kg (%s)",
                 model.getNitroRestantKg(), model.getNitroCapaciteKg(), nitroState);
-        g2.drawString(nitroText, 20, 95);
+        g2.drawString(nitroText, 20, 115);
 
         double capKg = model.getNitroCapaciteKg();
         double remainingKg = model.getNitroRestantKg();
@@ -179,7 +182,7 @@ public class CompteurVitesseVue extends JPanel {
         ratio = Math.max(0.0, Math.min(1.0, ratio));
 
         int barX = 20;
-        int barY = 105;
+        int barY = 125;
         int barW = 220;
         int barH = 10;
 

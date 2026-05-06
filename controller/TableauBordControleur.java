@@ -73,7 +73,7 @@ public class TableauBordControleur {
                     updateStatus("ARRIVEE ! La voiture a termine la piste !");
                     Toolkit.getDefaultToolkit().beep();
                     if (chronoVue != null) {
-                        chronoVue.showFinishTimeSeconds(model.getTempsTheoriqueSecondes());
+                        chronoVue.showFinishTime();
                     }
                 } else if (distance == 0) {
                     if (chronoVue != null) {
@@ -203,9 +203,9 @@ public class TableauBordControleur {
         panel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         panel.setLayout(new FlowLayout(FlowLayout.LEFT));
         
-        statusLabel = new JLabel("Prêt - Utilisez ESPACE pour accélérer (global) | N nitro");
+        statusLabel = new JLabel("ETU 3321");
         statusLabel.setForeground(Color.LIGHT_GRAY);
-        statusLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        statusLabel.setFont(new Font("Arial", Font.PLAIN, 20));
         panel.add(statusLabel);
         
         return panel;
@@ -449,7 +449,7 @@ public class TableauBordControleur {
             statusLabel.setText(message);
             Timer timer = new Timer(3000, e -> {
                 if (statusLabel != null && statusLabel.getText().equals(message)) {
-                    statusLabel.setText("Prêt - ESPACE global pour accélérer | N nitro");
+                    statusLabel.setText("ETU 3321");
                 }
             });
             timer.setRepeats(false);

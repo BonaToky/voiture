@@ -12,7 +12,8 @@ public class ChronoVue extends JPanel {
     private long chronoMillis = START_MILLIS;
     private long startNano = 0L;
     private final JLabel timeLabel;
-    private final JLabel finishLabel;
+    private final JLabel finishTitleLabel;
+    private final JLabel finishValueLabel;
     private final JButton startButton;
     private final JButton stopButton;
     private final JButton resetButton;
@@ -41,11 +42,16 @@ public class ChronoVue extends JPanel {
         startButton = createButton("Start", new Color(0, 140, 0));
         stopButton = createButton("Stop", new Color(140, 0, 0));
         resetButton = createButton("Reinitialiser", new Color(0, 0, 140));
+        
+        finishTitleLabel = new JLabel("Arrivee");
+        finishTitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        finishTitleLabel.setForeground(new Color(255, 215, 0));
+        finishTitleLabel.setFont(new Font("Arial", Font.BOLD, 18));
 
-        finishLabel = new JLabel("Arrivee: --");
-        finishLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        finishLabel.setForeground(new Color(200, 200, 200));
-        finishLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        finishValueLabel = new JLabel("--");
+        finishValueLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        finishValueLabel.setForeground(new Color(200, 200, 200));
+        finishValueLabel.setFont(new Font("Monospaced", Font.BOLD, 14));
 
         startButton.addActionListener(e -> startChrono());
         stopButton.addActionListener(e -> stopChrono());
@@ -62,8 +68,10 @@ public class ChronoVue extends JPanel {
         add(stopButton);
         add(Box.createVerticalStrut(8));
         add(resetButton);
-        add(Box.createVerticalStrut(12));
-        add(finishLabel);
+        add(Box.createVerticalStrut(10));
+        add(finishTitleLabel);
+        add(Box.createVerticalStrut(4));
+        add(finishValueLabel);
         add(Box.createVerticalGlue());
 
         updateButtons();
@@ -115,8 +123,8 @@ public class ChronoVue extends JPanel {
             return;
         }
         double safeSeconds = Math.max(0.0, seconds);
-        finishLabel.setText("Arrivee: " + formatSeconds(safeSeconds) + " s");
-        finishLabel.setForeground(new Color(255, 215, 0));
+        finishValueLabel.setText(formatSeconds(safeSeconds) + " s");
+        finishValueLabel.setForeground(new Color(255, 215, 0));
         finishShown = true;
     }
 
@@ -125,14 +133,14 @@ public class ChronoVue extends JPanel {
             return;
         }
         long safeMillis = Math.max(0L, millis);
-        finishLabel.setText("Arrivee: " + formatTimeMillis(safeMillis));
-        finishLabel.setForeground(new Color(255, 215, 0));
+        finishValueLabel.setText(formatTimeMillis(safeMillis));
+        finishValueLabel.setForeground(new Color(255, 215, 0));
         finishShown = true;
     }
 
     public void clearFinish() {
-        finishLabel.setText("Arrivee: --");
-        finishLabel.setForeground(new Color(200, 200, 200));
+        finishValueLabel.setText("--");
+        finishValueLabel.setForeground(new Color(200, 200, 200));
         finishShown = false;
     }
 
