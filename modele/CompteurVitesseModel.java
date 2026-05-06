@@ -17,6 +17,8 @@ public class CompteurVitesseModel {
     private long dernierTemps;
     private double tempsCourse = 0; // secondes
     private boolean courseEnCours = false;
+    private boolean nitroActive = false;
+    private double nitroKgRestant = 0.0;
     
     public CompteurVitesseModel() {
         dernierTemps = System.currentTimeMillis();
@@ -27,6 +29,11 @@ public class CompteurVitesseModel {
     public Voiture getVoitureActuelle() { return voitureActuelle; }
     public Piste getPisteActuelle() { return pisteActuelle; }
     public int getTempsCourseSecondes() { return (int) Math.round(tempsCourse); }
+    public boolean isNitroActive() { return nitroActive; }
+    public double getNitroRestantKg() { return nitroKgRestant; }
+    public double getNitroCapaciteKg() {
+        return voitureActuelle != null ? voitureActuelle.getCapaciteNitroKg() : 0.0;
+    }
 
     public double getTempsTheoriqueSecondes() {
         if (voitureActuelle == null || pisteActuelle == null) {
@@ -60,6 +67,8 @@ public class CompteurVitesseModel {
         this.accelerating = false;
         this.tempsCourse = 0;
         this.courseEnCours = false;
+        this.nitroActive = false;
+        this.nitroKgRestant = voiture != null ? voiture.getCapaciteNitroKg() : 0.0;
         stopAcceleration();
         if (pisteActuelle != null) {
             pisteActuelle.reset();
@@ -72,6 +81,8 @@ public class CompteurVitesseModel {
         this.tempsCourse = 0;
         this.courseEnCours = false;
         this.vitessePalier = 0;
+        this.nitroActive = false;
+        this.nitroKgRestant = voitureActuelle != null ? voitureActuelle.getCapaciteNitroKg() : 0.0;
         if (pisteActuelle != null) {
             pisteActuelle.reset();
         }
@@ -102,6 +113,27 @@ public class CompteurVitesseModel {
             vitessePalier = Math.min(vitesseActuelle, voitureActuelle.getVitesseMax());
         }
     }
+
+    public void startNitro() {
+        if (voitureActuelle == null || pisteActuelle == null) {
+            return;
+        }
+        if (nitroKgRestant <= 0.0) {
+            nitroActive = false;
+            return;
+        }
+        if (!nitroActive) {
+            nitroActive = true;
+            fireStateChanged();
+        }
+    }
+
+    public void stopNitro() {
+        if (nitroActive) {
+            nitroActive = false;
+            fireStateChanged();
+        }
+    }
     
     private void startAnimationTimer() {
         animationTimer = new Timer(16, e -> { // ~60 FPS pour l'animation de la voiture
@@ -126,6 +158,7 @@ public class CompteurVitesseModel {
                     vitesseActuelle = 0;
                     accelerating = false;
                     courseEnCours = false;
+                    nitroActive = false;
                 }
 
                 fireStateChanged();
@@ -148,6 +181,8 @@ public class CompteurVitesseModel {
         tempsCourse = 0;
         courseEnCours = false;
         vitessePalier = 0;
+        nitroActive = false;
+        nitroKgRestant = voitureActuelle != null ? voitureActuelle.getCapaciteNitroKg() : 0.0;
         stopAcceleration();
         if (pisteActuelle != null) {
             pisteActuelle.reset();
@@ -160,6 +195,7 @@ public class CompteurVitesseModel {
         vitesseActuelle = 0;
         vitessePalier = 0;
         courseEnCours = false;
+        nitroActive = false;
         fireStateChanged();
     }
 
@@ -168,14 +204,30 @@ public class CompteurVitesseModel {
             return;
         }
 
+        boolean nitroBoostActive = nitroActive && nitroKgRestant > 0.0;
+
         if (accelerating) {
             double acceleration = voitureActuelle.getAcceleration();
+            if (nitroBoostActive) {
+                acceleration += voitureActuelle.getVariationAcceleration();
+            }
             if (acceleration > 0) {
                 double vitesseMax = voitureActuelle.getVitesseMax();
                 vitesseActuelle = Math.min(vitesseActuelle + acceleration * deltaTime, vitesseMax);
             } else {
                 vitesseActuelle = 0;
                 accelerating = false;
+            }
+        }
+
+        if (nitroBoostActive && accelerating) {
+            double consoKgMin = voitureActuelle.getConsoNitroKgMin();
+            if (consoKgMin > 0) {
+                double consoKgSec = consoKgMin / 60.0;
+                nitroKgRestant = Math.max(0.0, nitroKgRestant - consoKgSec * deltaTime);
+                if (nitroKgRestant == 0.0) {
+                    nitroActive = false;
+                }
             }
         }
 

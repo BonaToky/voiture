@@ -1,4 +1,4 @@
-NomVoiture,capacite_acceleration_km_h_s,Vitess_Max_km_h
-lambirgini,10,100
-porche901,12,200
-clio,8,180
+NomVoiture,capacite_acceleration_km_h_s,Vitess_Max_km_h,conso_nintro_kg/min,variation_acceleration_km/h/s/s,capaciter_nitro_kg
+lambirgini,10,100,1,10,10
+porche901,12,200,2,20,38
+clio,8,180,6,9,18

@@ -8,7 +8,7 @@ import java.awt.geom.*;
 
 public class CompteurVitesseVue extends JPanel {
     private CompteurVitesseModel model;
-    
+
     public CompteurVitesseVue(CompteurVitesseModel model) {
         this.model = model;
         setPreferredSize(new Dimension(500, 500));
@@ -158,7 +158,7 @@ public class CompteurVitesseVue extends JPanel {
         Voiture voiture = model.getVoitureActuelle();
         
         g2.setColor(new Color(0, 0, 0, 100));
-        g2.fillRoundRect(10, 10, 220, 80, 10, 10);
+        g2.fillRoundRect(10, 10, 260, 120, 10, 10);
         
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 14));
@@ -167,13 +167,47 @@ public class CompteurVitesseVue extends JPanel {
         g2.setFont(new Font("Arial", Font.PLAIN, 12));
         g2.drawString("Vitesse Max: " + voiture.getVitesseMax() + " km/h", 20, 55);
         g2.drawString("Accélération: " + String.format("%.1f", voiture.getAcceleration()) + " km/h/s", 20, 75);
+
+        String nitroState = model.isNitroActive() ? "ON" : "OFF";
+        String nitroText = String.format("Nitro: %.1f/%.1f kg (%s)",
+                model.getNitroRestantKg(), model.getNitroCapaciteKg(), nitroState);
+        g2.drawString(nitroText, 20, 95);
+
+        double capKg = model.getNitroCapaciteKg();
+        double remainingKg = model.getNitroRestantKg();
+        double ratio = capKg > 0.0 ? remainingKg / capKg : 0.0;
+        ratio = Math.max(0.0, Math.min(1.0, ratio));
+
+        int barX = 20;
+        int barY = 105;
+        int barW = 220;
+        int barH = 10;
+
+        g2.setColor(new Color(20, 20, 20));
+        g2.fillRoundRect(barX, barY, barW, barH, 6, 6);
+        g2.setColor(new Color(70, 70, 70));
+        g2.drawRoundRect(barX, barY, barW, barH, 6, 6);
+
+        int fillW = (int) Math.round(barW * ratio);
+        if (fillW > 0) {
+            Color fillColor;
+            if (ratio > 0.5) {
+                fillColor = new Color(0, 180, 90);
+            } else if (ratio > 0.2) {
+                fillColor = new Color(200, 160, 0);
+            } else {
+                fillColor = new Color(200, 60, 60);
+            }
+            g2.setColor(fillColor);
+            g2.fillRoundRect(barX, barY, fillW, barH, 6, 6);
+        }
     }
     
     private void drawInstructions(Graphics2D g2) {
         g2.setColor(new Color(255, 255, 255, 100));
         g2.setFont(new Font("Arial", Font.PLAIN, 11));
         
-        String instructions = "ESPACE: Accélérer | R: Réinitialiser | D: Décélérer";
+        String instructions = "ESPACE: Accélérer | N: Nitro | R: Réinitialiser | D: Décélérer";
         FontMetrics fm = g2.getFontMetrics();
         int x = (getWidth() - fm.stringWidth(instructions)) / 2;
         int y = getHeight() - 20;

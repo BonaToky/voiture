@@ -134,21 +134,21 @@ public class TableauBordControleur {
         });
         
         // Boutons
-        JButton startBtn = createStyledButton("Accélerer (ESPACE)", new Color(0, 150, 0));
-        startBtn.addActionListener(e -> {
-            if (model.getVoitureActuelle() != null && model.getPisteActuelle() != null) {
-                if (model.getPisteActuelle().estTerminee()) {
-                    updateStatus("La piste est terminee! Utilisez R pour reinitialiser.");
-                } else {
-                    model.startAcceleration();
-                }
-            } else {
-                updateStatus("Selectionnez d'abord une voiture et une piste!");
-            }
-        });
+        // JButton startBtn = createStyledButton("Accélerer (ESPACE)", new Color(0, 150, 0));
+        // startBtn.addActionListener(e -> {
+        //     if (model.getVoitureActuelle() != null && model.getPisteActuelle() != null) {
+        //         if (model.getPisteActuelle().estTerminee()) {
+        //             updateStatus("La piste est terminee! Utilisez R pour reinitialiser.");
+        //         } else {
+        //             model.startAcceleration();
+        //         }
+        //     } else {
+        //         updateStatus("Selectionnez d'abord une voiture et une piste!");
+        //     }
+        // });
         
-        JButton stopBtn = createStyledButton("Arreter", new Color(150, 0, 0));
-        stopBtn.addActionListener(e -> model.stopCourse());
+        // JButton stopBtn = createStyledButton("Arreter", new Color(150, 0, 0));
+        // stopBtn.addActionListener(e -> model.stopCourse());
         
         JButton resetBtn = createStyledButton("Reinitialiser (R)", new Color(0, 0, 150));
         resetBtn.addActionListener(e -> {
@@ -156,8 +156,8 @@ public class TableauBordControleur {
             updateStatus("Course réinitialisée!");
         });
         
-        JButton decelerateBtn = createStyledButton("Decelerer (D)", new Color(150, 150, 0));
-        decelerateBtn.addActionListener(e -> model.decelerer());
+        // JButton decelerateBtn = createStyledButton("Decelerer (D)", new Color(150, 150, 0));
+        // decelerateBtn.addActionListener(e -> model.decelerer());
         
         panel.add(carLabel);
         panel.add(Box.createHorizontalStrut(5));
@@ -167,11 +167,11 @@ public class TableauBordControleur {
         panel.add(Box.createHorizontalStrut(5));
         panel.add(pisteSelector);
         panel.add(Box.createHorizontalStrut(15));
-        panel.add(startBtn);
-        panel.add(Box.createHorizontalStrut(5));
-        panel.add(stopBtn);
-        panel.add(Box.createHorizontalStrut(5));
-        panel.add(decelerateBtn);
+        // panel.add(startBtn);
+        // panel.add(Box.createHorizontalStrut(5));
+        // panel.add(stopBtn);
+        // panel.add(Box.createHorizontalStrut(5));
+        // panel.add(decelerateBtn);
         panel.add(Box.createHorizontalStrut(5));
         panel.add(resetBtn);
         
@@ -203,7 +203,7 @@ public class TableauBordControleur {
         panel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         panel.setLayout(new FlowLayout(FlowLayout.LEFT));
         
-        statusLabel = new JLabel("Prêt - Utilisez ESPACE pour accélérer (global)");
+        statusLabel = new JLabel("Prêt - Utilisez ESPACE pour accélérer (global) | N nitro");
         statusLabel.setForeground(Color.LIGHT_GRAY);
         statusLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         panel.add(statusLabel);
@@ -347,7 +347,11 @@ public class TableauBordControleur {
                         String nom = data[0].trim();
                         double acceleration = Double.parseDouble(data[1].trim());
                         int vitesseMax = Integer.parseInt(data[2].trim());
-                        voitures.add(new Voiture(nom, acceleration, vitesseMax));
+                        double consoNitro = data.length > 3 ? parseDoubleOrZero(data[3]) : 0.0;
+                        double variationAccel = data.length > 4 ? parseDoubleOrZero(data[4]) : 0.0;
+                        double capaciteNitro = data.length > 5 ? parseDoubleOrZero(data[5]) : 0.0;
+                        voitures.add(new Voiture(nom, acceleration, vitesseMax, consoNitro,
+                                variationAccel, capaciteNitro));
                     } catch (NumberFormatException ex) {
                         System.err.println("Erreur de parsing: " + line);
                     }
@@ -409,6 +413,17 @@ public class TableauBordControleur {
         }
         return true;
     }
+
+    private double parseDoubleOrZero(String value) {
+        if (value == null) {
+            return 0.0;
+        }
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (NumberFormatException ex) {
+            return 0.0;
+        }
+    }
     
     private void showAboutDialog() {
         String message = "Tableau de Bord Voiture - Version 3.1\n\n" +
@@ -419,10 +434,11 @@ public class TableauBordControleur {
                         "• Contrôle GLOBAL par ESPACE (n'affecte pas les autres composants)\n\n" +
                         "Contrôles:\n" +
                         "• ESPACE (maintenir) : Accélération GLOBALE\n" +
+                        "• N (maintenir) : Nitro\n" +
                         "• R : Réinitialiser la course\n" +
                         "• D : Décélérer\n\n" +
                         "Fichiers requis:\n" +
-                        "- voitures.csv (nom,accélération,vitesse_max)\n" +
+                        "- voitures.csv (nom,accélération,vitesse_max,conso_nintro_kg/min,variation_acceleration_km/h/s/s,capaciter_nitro_kg)\n" +
                         "- distance_piste.csv (nom,distance_km)";
         
         JOptionPane.showMessageDialog(frame, message, "À propos", JOptionPane.INFORMATION_MESSAGE);
@@ -433,7 +449,7 @@ public class TableauBordControleur {
             statusLabel.setText(message);
             Timer timer = new Timer(3000, e -> {
                 if (statusLabel != null && statusLabel.getText().equals(message)) {
-                    statusLabel.setText("Prêt - ESPACE global pour accélérer");
+                    statusLabel.setText("Prêt - ESPACE global pour accélérer | N nitro");
                 }
             });
             timer.setRepeats(false);

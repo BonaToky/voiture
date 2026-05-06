@@ -8,6 +8,7 @@ import java.awt.event.KeyEvent;
 public class GlobalKeyHandler implements KeyEventDispatcher {
     private CompteurVitesseModel model;
     private boolean spacePressed = false;
+    private boolean nitroPressed = false;
     
     public GlobalKeyHandler(CompteurVitesseModel model) {
         this.model = model;
@@ -39,6 +40,24 @@ public class GlobalKeyHandler implements KeyEventDispatcher {
         if (e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_SPACE) {
             spacePressed = false;
             model.stopAcceleration();
+            e.consume();
+            return true;
+        }
+
+        // Touche N pour activer le nitro
+        if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_N) {
+            if (!nitroPressed) {
+                nitroPressed = true;
+                model.startNitro();
+            }
+            e.consume();
+            return true;
+        }
+
+        // Touche N relachee
+        if (e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_N) {
+            nitroPressed = false;
+            model.stopNitro();
             e.consume();
             return true;
         }
