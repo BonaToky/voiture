@@ -11,8 +11,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class TableauBordControleur {
@@ -24,6 +30,8 @@ public class TableauBordControleur {
     private PisteVue pisteVue;
     private ChronoVue chronoVue;
     private GlobalKeyHandler globalKeyHandler;
+    private boolean finishRecorded = false;
+    private static final String SAVE_FILE_NAME = "save.csv";
     
     public TableauBordControleur(CompteurVitesseModel model) {
         this.model = model;
@@ -70,12 +78,18 @@ public class TableauBordControleur {
             if (model.getPisteActuelle() != null) {
                 double distance = model.getPisteActuelle().getDistanceParcourue();
                 if (model.getPisteActuelle().estTerminee()) {
-                    updateStatus("ARRIVEE ! La voiture a termine la piste !");
-                    Toolkit.getDefaultToolkit().beep();
-                    if (chronoVue != null) {
-                        chronoVue.showFinishTime();
+                    if (!finishRecorded) {
+                        finishRecorded = true;
+                        updateStatus("ARRIVEE ! La voiture a termine la piste !");
+                        Toolkit.getDefaultToolkit().beep();
+                        double tempsSecondes = model.getTempsCourseSecondesExact();
+                        if (chronoVue != null) {
+                            chronoVue.showFinishTimeSeconds(tempsSecondes);
+                        }
+                        enregistrerResultatCourse(tempsSecondes);
                     }
                 } else if (distance == 0) {
+                    finishRecorded = false;
                     if (chronoVue != null) {
                         chronoVue.clearFinish();
                     }
@@ -203,7 +217,7 @@ public class TableauBordControleur {
         panel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         panel.setLayout(new FlowLayout(FlowLayout.LEFT));
         
-        statusLabel = new JLabel("ETU 3188");
+        statusLabel = new JLabel("_");
         statusLabel.setForeground(Color.LIGHT_GRAY);
         statusLabel.setFont(new Font("Arial", Font.PLAIN, 20));
         panel.add(statusLabel);
@@ -400,6 +414,64 @@ public class TableauBordControleur {
         return pistes;
     }
 
+    private void enregistrerResultatCourse(double tempsSecondes) {
+        Voiture voiture = model.getVoitureActuelle();
+        if (voiture == null) {
+            return;
+        }
+        double tempsSecurise = Math.max(0.0, tempsSecondes);
+        Path savePath = Paths.get(SAVE_FILE_NAME);
+        try {
+            List<ResultatCourse> resultats = lireResultatsCourse(savePath);
+            resultats.add(new ResultatCourse(voiture.getNom(), tempsSecurise));
+            resultats.sort(Comparator.comparingDouble(r -> r.tempsSecondes));
+            ecrireResultatsCourse(savePath, resultats);
+            updateStatus("Resultat enregistre dans " + SAVE_FILE_NAME);
+        } catch (IOException ex) {
+            updateStatus("Erreur ecriture " + SAVE_FILE_NAME);
+            ex.printStackTrace();
+        }
+    }
+
+    private List<ResultatCourse> lireResultatsCourse(Path savePath) throws IOException {
+        List<ResultatCourse> resultats = new ArrayList<>();
+        if (!Files.exists(savePath)) {
+            return resultats;
+        }
+        List<String> lines = Files.readAllLines(savePath, StandardCharsets.UTF_8);
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i).trim();
+            if (line.isEmpty()) {
+                continue;
+            }
+            if (i == 0 && line.toLowerCase().startsWith("voiture")) {
+                continue;
+            }
+            String[] parts = line.split(",");
+            if (parts.length < 2) {
+                continue;
+            }
+            String nom = parts[0].trim();
+            Double temps = parseDoubleOrNull(parts[1]);
+            if (temps == null) {
+                continue;
+            }
+            resultats.add(new ResultatCourse(nom, temps));
+        }
+        return resultats;
+    }
+
+    private void ecrireResultatsCourse(Path savePath, List<ResultatCourse> resultats) throws IOException {
+        List<String> lines = new ArrayList<>();
+        lines.add("voiture,temps_s");
+        for (ResultatCourse resultat : resultats) {
+            lines.add(String.format(java.util.Locale.US, "%s,%.3f",
+                    resultat.nomVoiture, resultat.tempsSecondes));
+        }
+        Files.write(savePath, lines, StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
     private boolean isNumericToken(String value) {
         String cleaned = value.trim().toLowerCase().replace("km", "").trim();
         if (cleaned.isEmpty()) {
@@ -422,6 +494,27 @@ public class TableauBordControleur {
             return Double.parseDouble(value.trim());
         } catch (NumberFormatException ex) {
             return 0.0;
+        }
+    }
+
+    private Double parseDoubleOrNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private static class ResultatCourse {
+        private final String nomVoiture;
+        private final double tempsSecondes;
+
+        private ResultatCourse(String nomVoiture, double tempsSecondes) {
+            this.nomVoiture = nomVoiture;
+            this.tempsSecondes = tempsSecondes;
         }
     }
     
@@ -449,7 +542,7 @@ public class TableauBordControleur {
             statusLabel.setText(message);
             Timer timer = new Timer(3000, e -> {
                 if (statusLabel != null && statusLabel.getText().equals(message)) {
-                    statusLabel.setText("ETU 3188");
+                    statusLabel.setText("_");
                 }
             });
             timer.setRepeats(false);

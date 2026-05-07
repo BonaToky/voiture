@@ -29,6 +29,7 @@ public class CompteurVitesseModel {
     public Voiture getVoitureActuelle() { return voitureActuelle; }
     public Piste getPisteActuelle() { return pisteActuelle; }
     public int getTempsCourseSecondes() { return (int) Math.round(tempsCourse); }
+    public double getTempsCourseSecondesExact() { return tempsCourse; }
     public boolean isNitroActive() { return nitroActive; }
     public double getNitroRestantKg() { return nitroKgRestant; }
     public double getNitroCapaciteKg() {
