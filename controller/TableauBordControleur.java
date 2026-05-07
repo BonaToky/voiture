@@ -449,7 +449,7 @@ public class TableauBordControleur {
             statusLabel.setText(message);
             Timer timer = new Timer(3000, e -> {
                 if (statusLabel != null && statusLabel.getText().equals(message)) {
-                    statusLabel.setText("ETU 3321");
+                    statusLabel.setText("ETU ");
                 }
             });
             timer.setRepeats(false);
