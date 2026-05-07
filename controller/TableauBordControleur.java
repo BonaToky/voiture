@@ -203,7 +203,7 @@ public class TableauBordControleur {
         panel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         panel.setLayout(new FlowLayout(FlowLayout.LEFT));
         
-        statusLabel = new JLabel("ETU 3321");
+        statusLabel = new JLabel("ETU 3188");
         statusLabel.setForeground(Color.LIGHT_GRAY);
         statusLabel.setFont(new Font("Arial", Font.PLAIN, 20));
         panel.add(statusLabel);
@@ -449,7 +449,7 @@ public class TableauBordControleur {
             statusLabel.setText(message);
             Timer timer = new Timer(3000, e -> {
                 if (statusLabel != null && statusLabel.getText().equals(message)) {
-                    statusLabel.setText("ETU ");
+                    statusLabel.setText("ETU 3188");
                 }
             });
             timer.setRepeats(false);
