@@ -68,32 +68,52 @@ public class PisteVue extends JPanel {
         positionX = Math.min(positionX, width - 30);
         positionX = Math.max(positionX, 20);
         
-        // Dessiner la voiture (petit rectangle)
-        int carWidth = 25;
-        int carHeight = 25;
+        int carWidth = 34;
+        int carHeight = 18;
         int carX = positionX - carWidth / 2;
         int carY = pisteY + (pisteHeight - carHeight) / 2;
-        
-        // Ombre de la voiture
-        g2.setColor(new Color(0, 0, 0, 100));
-        g2.fillRoundRect(carX + 2, carY + 2, carWidth, carHeight, 5, 5);
-        
-        // Corps de la voiture
-        GradientPaint gradient = new GradientPaint(carX, carY, Color.RED, carX + carWidth, carY + carHeight, Color.ORANGE);
-        g2.setPaint(gradient);
-        g2.fillRoundRect(carX, carY, carWidth, carHeight, 5, 5);
-        
-        // Fenêtres de la voiture
-        g2.setColor(Color.CYAN);
-        g2.fillRoundRect(carX + 5, carY + 5, 6, 6, 2, 2);
-        g2.fillRoundRect(carX + 14, carY + 5, 6, 6, 2, 2);
-        
-        // Roues
-        g2.setColor(Color.BLACK);
-        g2.fillOval(carX + 3, carY + carHeight - 5, 5, 5);
-        g2.fillOval(carX + carWidth - 8, carY + carHeight - 5, 5, 5);
-        g2.fillOval(carX + 3, carY - 2, 5, 5);
-        g2.fillOval(carX + carWidth - 8, carY - 2, 5, 5);
+
+        g2.setColor(new Color(0, 0, 0, 120));
+        g2.fillRoundRect(carX + 2, carY + 3, carWidth, carHeight, 8, 8);
+
+        GradientPaint bodyGradient = new GradientPaint(
+            carX, carY, new Color(220, 40, 40),
+            carX + carWidth, carY + carHeight, new Color(255, 140, 0));
+        g2.setPaint(bodyGradient);
+        g2.fillRoundRect(carX, carY, carWidth, carHeight, 8, 8);
+
+        g2.setColor(new Color(255, 255, 255, 120));
+        g2.fillRoundRect(carX + 6, carY + 6, carWidth - 12, 3, 3, 3);
+
+        g2.setColor(new Color(120, 10, 10));
+        g2.fillRoundRect(carX + 2, carY + carHeight - 4, carWidth - 4, 4, 4, 4);
+
+        int roofWidth = 18;
+        int roofHeight = 7;
+        int roofX = carX + (carWidth - roofWidth) / 2;
+        int roofY = carY - 2;
+
+        g2.setColor(new Color(180, 50, 50));
+        g2.fillRoundRect(roofX, roofY, roofWidth, roofHeight, 5, 5);
+
+        g2.setColor(new Color(120, 200, 220));
+        g2.fillRoundRect(roofX + 2, roofY + 2, roofWidth - 4, roofHeight - 3, 3, 3);
+
+        g2.setColor(new Color(255, 240, 180));
+        g2.fillOval(carX + carWidth - 4, carY + 5, 4, 4);
+        g2.setColor(new Color(200, 30, 30));
+        g2.fillRect(carX, carY + 6, 3, 4);
+
+        int wheelSize = 6;
+        int wheelY = carY + carHeight - 2;
+        int wheelRearX = carX + 4;
+        int wheelFrontX = carX + carWidth - 10;
+        g2.setColor(new Color(10, 10, 10));
+        g2.fillOval(wheelRearX, wheelY, wheelSize, wheelSize);
+        g2.fillOval(wheelFrontX, wheelY, wheelSize, wheelSize);
+        g2.setColor(new Color(160, 160, 160));
+        g2.fillOval(wheelRearX + 2, wheelY + 2, 2, 2);
+        g2.fillOval(wheelFrontX + 2, wheelY + 2, 2, 2);
         
         // Effet de vitesse (traînée)
         if (piste.getPourcentage() > 0 && piste.getPourcentage() < 100) {
